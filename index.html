@@ -1558,13 +1558,20 @@ section { position: relative; z-index: 2; }
   border-radius: 24px;
   width: 100%;
   max-width: 580px;
+  max-height: calc(100dvh - 40px);
   padding: 48px;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   transform: scale(0.92) translateY(20px);
   transition: transform 0.45s var(--ease-spring);
   box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
 }
+/* Scrollbar inside modal — subtle */
+.modal::-webkit-scrollbar { width: 4px; }
+.modal::-webkit-scrollbar-track { background: transparent; }
+.modal::-webkit-scrollbar-thumb { background: rgba(100,108,255,0.3); border-radius: 4px; }
 
 .modal-overlay.open .modal {
   transform: scale(1) translateY(0);
@@ -2135,12 +2142,90 @@ footer {
   .modal-step-title { font-size: 1.35rem; }
 }
 
+/* Modal overlay — allow modal to sit near top on very short screens */
+@media (max-height: 700px) {
+  .modal-overlay { align-items: flex-start; padding: 16px; }
+  .modal { max-height: calc(100dvh - 32px); }
+}
+
 /* Restore natural cursors & hide custom cursor on touch devices */
 @media (hover: none), (pointer: coarse) {
   body { cursor: auto; }
   a, button, [onclick] { cursor: pointer; }
   #cursor-dot, #cursor-ring { display: none; }
   .service-card, .test-card { transform: none !important; transition: border-color 0.3s, box-shadow 0.3s !important; }
+}
+
+/* =============================================
+   SPLASH SCREEN
+   ============================================= */
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #06060f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0;
+  pointer-events: none;
+}
+
+#splash.hide {
+  animation: splash-out 0.7s var(--ease) forwards;
+}
+
+@keyframes splash-out {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.04); visibility: hidden; }
+}
+
+.splash-logo {
+  font-size: clamp(4.5rem, 18vw, 9rem);
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  line-height: 1;
+  background: linear-gradient(135deg, #9095ff 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: sl-in 0.8s var(--ease-spring) forwards;
+  opacity: 0;
+}
+
+@keyframes sl-in {
+  0%   { opacity: 0; transform: scale(0.6) translateY(20px); filter: blur(12px); }
+  60%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+.splash-glow {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(100,108,255,0.22) 0%, transparent 65%);
+  animation: splash-glow-pulse 1.5s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes splash-glow-pulse {
+  from { transform: scale(0.9); opacity: 0.6; }
+  to   { transform: scale(1.1); opacity: 1; }
+}
+
+.splash-line {
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--indigo), var(--cyan));
+  border-radius: 2px;
+  margin-top: 20px;
+  animation: splash-line-in 0.6s 0.5s var(--ease) forwards;
+}
+
+@keyframes splash-line-in {
+  to { width: 80px; }
 }
 
 /* Respect reduced motion preferences */
@@ -2161,6 +2246,13 @@ footer {
 <canvas id="bg-canvas"></canvas>
 
 <!-- NOISE -->
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <div class="splash-glow"></div>
+  <div class="splash-logo">SL</div>
+  <div class="splash-line"></div>
+</div>
+
 <div class="noise"></div>
 
 <!-- MOBILE MENU -->
@@ -2966,6 +3058,19 @@ document.querySelectorAll('a, button, .option-btn, .port-card, .service-card, .f
   el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
   el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
 });
+
+/* =============================================
+   SPLASH SCREEN
+   ============================================= */
+(function() {
+  const splash = document.getElementById('splash');
+  if (!splash) return;
+  // Dismiss after 2s: 0.8s animation + 0.5s hold + 0.7s fade-out
+  setTimeout(() => {
+    splash.classList.add('hide');
+    splash.addEventListener('animationend', () => splash.remove(), { once: true });
+  }, 1800);
+})();
 
 /* =============================================
    PARTICLE CANVAS
