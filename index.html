@@ -1961,7 +1961,7 @@ section { position: relative; z-index: 2; }
 }
 
 .faq-item.open .faq-a {
-  max-height: 200px;
+  max-height: 400px;
   padding: 0 24px 22px;
 }
 
@@ -2122,6 +2122,16 @@ footer {
   .hero-h1 { font-size: 2.2rem; }
   .section-heading { font-size: 1.8rem; }
   .sim-h2 { font-size: 2rem; }
+  .modal { padding: 28px 20px; }
+  .modal-step-title { font-size: 1.35rem; }
+}
+
+/* Restore natural cursors & hide custom cursor on touch devices */
+@media (hover: none), (pointer: coarse) {
+  body { cursor: auto; }
+  a, button, [onclick] { cursor: pointer; }
+  #cursor-dot, #cursor-ring { display: none; }
+  .tilt-disabled, .service-card, .test-card { transform: none !important; }
 }
 </style>
 </head>
@@ -2145,7 +2155,7 @@ footer {
   <a href="#process" onclick="closeMobile()">Processo</a>
   <a href="#testimonials" onclick="closeMobile()">Depoimentos</a>
   <a href="#faq" onclick="closeMobile()">FAQ</a>
-  <a href="#" onclick="closeMobile();openModal()" style="background:linear-gradient(135deg,var(--indigo),var(--purple));padding:14px 32px;border-radius:var(--r-sm);font-weight:700;">Simular Orçamento</a>
+  <a href="#" onclick="closeMobile();openModal();return false;" style="background:linear-gradient(135deg,var(--indigo),var(--purple));padding:14px 32px;border-radius:var(--r-sm);font-weight:700;">Simular Orçamento</a>
 </div>
 
 <!-- NAVBAR -->
@@ -3174,47 +3184,64 @@ function buildResult() {
 }
 
 /* =============================================
-   TILT EFFECT ON CARDS
+   TILT EFFECT ON CARDS (desktop only)
    ============================================= */
-document.querySelectorAll('.service-card, .test-card').forEach(card => {
-  card.addEventListener('mousemove', (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    card.style.transform = `perspective(800px) rotateX(${-y * 6}deg) rotateY(${x * 6}deg) translateY(-4px)`;
+const isTouch = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+if (!isTouch) {
+  document.querySelectorAll('.service-card, .test-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `perspective(800px) rotateX(${-y * 6}deg) rotateY(${x * 6}deg) translateY(-4px)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
   });
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = '';
-  });
-});
+}
 
 /* =============================================
    SMOOTH SCROLL
    ============================================= */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
-    const target = document.querySelector(a.getAttribute('href'));
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    const href = a.getAttribute('href');
+    if (!href || href === '#') return;
+    try {
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } catch (_) {}
   });
 });
 
 /* =============================================
-   MAGNETIC BUTTONS
+   MAGNETIC BUTTONS (desktop only)
    ============================================= */
-document.querySelectorAll('.btn-sim-big, .btn-primary, .nav-btn-cta').forEach(btn => {
-  btn.addEventListener('mousemove', (e) => {
-    const rect = btn.getBoundingClientRect();
-    const x = (e.clientX - rect.left - rect.width / 2) * 0.25;
-    const y = (e.clientY - rect.top - rect.height / 2) * 0.25;
-    btn.style.transform = `translate(${x}px, ${y}px) translateY(-3px) scale(1.01)`;
+if (!isTouch) {
+  document.querySelectorAll('.btn-sim-big, .btn-primary, .nav-btn-cta').forEach(btn => {
+    btn.addEventListener('mousemove', (e) => {
+      const rect = btn.getBoundingClientRect();
+      const x = (e.clientX - rect.left - rect.width / 2) * 0.25;
+      const y = (e.clientY - rect.top - rect.height / 2) * 0.25;
+      btn.style.transform = `translate(${x}px, ${y}px) translateY(-3px) scale(1.01)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = '';
+    });
   });
-  btn.addEventListener('mouseleave', () => {
-    btn.style.transform = '';
-  });
-});
+}
+
+/* =============================================
+   CURSOR — hide on touch
+   ============================================= */
+if (isTouch) {
+  dot.style.display = 'none';
+  ring.style.display = 'none';
+}
 </script>
 </body>
 </html>
