@@ -2163,6 +2163,9 @@ footer {
   a, button, [onclick] { cursor: pointer; }
   #cursor-dot, #cursor-ring { display: none; }
   .service-card, .test-card { transform: none !important; transition: border-color 0.3s, box-shadow 0.3s !important; }
+  /* Show portfolio overlay always on touch — no hover available */
+  .port-overlay { opacity: 1; }
+  .port-arrow { opacity: 1; transform: translateY(0); }
 
   /* Kill all backdrop-filter on mobile — kills GPU on low-end phones */
   nav.scrolled,
